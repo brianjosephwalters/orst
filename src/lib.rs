@@ -1,3 +1,4 @@
+mod bubblesort;
 pub trait Sorter {
     fn sort<T>(slice: &mut [T]) where T: Ord;
 }
@@ -22,4 +23,5 @@ mod tests {
         sort::<_, StdSorter>(&mut things);
         assert_eq!(things, &[1, 2, 3, 4]);
     }
+    
 }
