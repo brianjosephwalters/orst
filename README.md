@@ -32,3 +32,7 @@
 * Why does binary search return `Ok()` and `Error()`?
     * when returning index where the thing was found, uses Ok().
     * when returning index where it should have been found, uses Err().
+
+Refactor:
+* Change from `::` to `.` you can think of it like a change from class method to instance method.
+    * an associated method of the type vs. a method of the type.

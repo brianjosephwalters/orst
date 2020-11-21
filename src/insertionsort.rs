@@ -1,18 +1,19 @@
 use super::Sorter;
 
-pub struct InsertionSort;
+pub struct InsertionSort {
+    smart: bool,
+}
 
 impl Sorter for InsertionSort {
-    fn sort<T>(slice: &mut [T]) where T: Ord {
+    fn sort<T>(&self, slice: &mut [T]) where T: Ord {
         // [ sorted | unsorted ]
         for unsorted in 1..slice.len() {
-            let smart = true;
-            if !smart {
+            if !self.smart {
                 // slice[unsorted..] is unsorted
                 // take slice[unsorted] and place in sorted location in slice[..=unsorted]
                 // [ 1 3 4 | 2 ] - requires shifting
                 // easist way is to keep moving the element selected to the left until the next left element is smaller.
-                let i = unsorted;
+                let mut i = unsorted;
                 while i > 0 && slice[i-1] > slice[i] {
                     slice.swap(i-1, i);
                     i -= 1;
@@ -36,8 +37,14 @@ impl Sorter for InsertionSort {
 }
 
 #[test]
-fn insertionsort_works() {
+fn insertionsort_works_smart() {
     let mut things = vec![4, 2, 5, 3, 1];
-    InsertionSort::sort(&mut things);
+    InsertionSort{smart: true}.sort(&mut things);
+    assert_eq!(things, &[1, 2, 3, 4, 5]);
+}
+#[test]
+fn insertionsort_works_dumb() {
+    let mut things = vec![4, 2, 5, 3, 1];
+    InsertionSort{smart: false}.sort(&mut things);
     assert_eq!(things, &[1, 2, 3, 4, 5]);
 }
