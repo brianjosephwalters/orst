@@ -56,3 +56,50 @@ let smallest_in_rest = unsorted + smallest_in_rest;
     * The lifetime of tuple is only for the lifetime of the `iter()`. Since we are returning v, it needs the lifetime of the value, not the tuple's reference to the value. The bad way is equivalent to `.min_by_key(|t| &t.1)`.  The corret way really says `min_by_key(|t| t.1)`
         * an & in a pattern is the same as the removal of an & in the value. 
 * `smallest_in_rest` refers to an index starting at unsorted, so index on the slice needs to add the two.
+
+## Quick Sort
+Pick an element at random from the list, walk the list.  Put everything smaller to one side and everything larget to the other side.  Do this recursively down until all are sorted.
+* Allocating and in-place implementations.
+### Allocating
+* Base case is when the slice is trivial to sort, either 0 or 1 elements.
+* Otherwise, we find a pivot point, and put everything less that the pivot into one bucket, and everything greater into another.
+* Then quicksort each bucket,
+* finally put the two buckets back together with the pivot, left being less than right.
+```
+fn quicksort<T: Ord>(slice: &mut [T]) {
+    // Base case: list so small its trivial to sort
+    match slice.len() {
+        0 | 1 => return,
+        2 => {
+            if slice[0] > slice[1] {
+            slice.swap(0, 1)
+            }
+        },
+        _ => {}
+    }
+    let pivot = &slice[0];
+
+    // ineffecient allocations
+    let mut left = vec![];
+    let mut right = vec![];
+    // Errors trying to move out of a slice.  Need tricks
+    for i in slice {
+        if slice[i] <= pivot {
+            left.push(slice[i]);
+        } else {
+            right.push(slice[i]);
+        }
+    }
+    quicksort(left);
+    quicksort(right);
+    // merge together
+    ..
+}
+```
+* Difficult to implement with rust - need tricks for allocating and moving around slices.  Borrow-checker
+### In Place
+* Start at 1 - if pivot always goes to the left, don't need to pivot.
+
+
+
+* when always choosing pivot to be the same element, and it is the largest element, then left will never shrink. So you get infinite recursion.
