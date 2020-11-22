@@ -11,11 +11,13 @@ struct SortEvaluator<T> {
 
 impl<T: PartialEq> PartialEq for SortEvaluator<T> {
     fn eq(&self, other: &Self) -> bool {
+        self.cmps.set(self.cmps.get() + 1);
         self.t == other.t
     }
 }
 impl<T: PartialOrd> PartialOrd for SortEvaluator<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.cmps.set(self.cmps.get() + 1);
         self.t.partial_cmp(&other.t)
     }
 }
@@ -41,16 +43,17 @@ fn main() {
     let mut rand = rand::thread_rng();
 
     for &n in &[0, 1, 10, 100, 1000, 10000] {
+        // Run on the same array of values..
+        let mut values = Vec::with_capacity(n);
+        for _ in 0..n {
+            values.push(SortEvaluator {
+                t: rand.gen::<usize>(),
+                cmps: Rc::clone(&counter),
+            })
+        }
         for _ in 0..10 {
-            // Run on the same array of values in the same order.
-            let mut values = Vec::with_capacity(n);
-            for _ in 0..n {
-                values.push(SortEvaluator {
-                    t: rand.gen::<usize>(),
-                    cmps: Rc::clone(&counter),
-                })
-            }
-
+            // Use the same values but shuffle their order for each of the 10 runs.
+            values.shuffle(&mut rand);
             // For each one, reset the counter and sort;
             let took = bench(BubbleSort, &values, &counter);
             println!("{} {} {}", "bubble", n, took);

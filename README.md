@@ -1,5 +1,6 @@
 # Sorting Algorithms in Rust
-
+Following along and taking notes from:
+[Crust of Rust: Sorting Algorithms](https://www.youtube.com/watch?v=h4RkCyJyXmM)
 
 ## Simple Setup
 * Create a Sorter trait - an instance method since sorters themselves won't have any state.
@@ -150,3 +151,21 @@ To Run: `cargo run --release`
     ```
     * The sorter trait is not object safe is because we have a method that is generic in it.
     * We cannot box the sorter because the trait is not object safe because it has a generic method on it.
+
+* Bubblesort fix:
+    * Check for base cases of vector arrays sized 0 and 1.
+* Quicksort fix:
+    * problem: `thread 'main' panicked at 'index out of bounds: the len is 6 but the index is 18446744073709551615', C:\Users\brian\git\orst\src\quicksort.rs:33:20`
+    * right can underflow
+        * imagine all of the elements get added to right, right can move passed 0 and then we do one more execution which underflows.
+        * This happens because usize doesn't go negative when it is (0-1), it becomes a large positive number (underflow).
+        * easiest solution is to use isize (allows negatives, so that `left <= right` fails and the body isn't evaluated when right goes below 0.)
+        * Since we are moving in increments of 1, we can just detect the underflowed state: `right != usize::MAX`.
+            * won't work in debug mode because rust will panic on underflow or overflow.
+        * Another solution is to use a smarter substraction. `right = right.wrapping_sub(1);`
+            * It seems like this will say that if 3 - x underflows, then you actually get 3 + x  or something like that.
+        * or we could just check at the end of the loop to see if right is 0.
+* Bubble, insertion-dumb, quick and selection are all reporting 0 compares.
+    * They all use PartialEq (`<` and `>`)
+        * either don't use operators and call `cmp()` directly, or move `self.cmps.set()` into `partial_cmp()`. Ord must then use PartialOrd.
+        * Or, we can just increment both, since we are calling directly to the t and not other, Ord and PartialOrd will never both be used.

@@ -26,19 +26,19 @@ fn quicksort<T: Ord>(slice: &mut [T]) {
     let mut right = rest.len() - 1;
 
     // Can't use for-loop because once we do a swap, we need to look at the element again.
-    while left <= right {
+    while right != usize::MAX && left <= right {
         if &rest[left] <= pivot {
             // already on correct side.
             left += 1;
         } else if &rest[right] > pivot {
             // right already on the correct side
             // avoid unnecessary swaps back and forth
-            right -= 1;
+            right = right.wrapping_sub(1);
         } else {
             // left holds a right and right holds a left. swap them.
             rest.swap(left, right);
             left += 1;
-            right -= 1;
+            right = right.wrapping_sub(1);
             // And we recheck element at left again (what was just moved there).
         }
     }
