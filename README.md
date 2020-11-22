@@ -99,7 +99,54 @@ fn quicksort<T: Ord>(slice: &mut [T]) {
 * Difficult to implement with rust - need tricks for allocating and moving around slices.  Borrow-checker
 ### In Place
 * Start at 1 - if pivot always goes to the left, don't need to pivot.
+* Base case 2 - pivot or not if the list is of size 2.
 
-
+* Otherwise, similar recursive idea, but:
+    * use slice.split_at_mut(index) to get two mutable portions of the original slice.
+        * This is really just getting the pivot from the 0th element without upsetting the borrow checker.
+    * create two indexes that move inward from the beginning and end of the slice.
+        * everything to the left of the left index should be lower than the pivot
+        * everything to the right of the right index should be higher than the pivot.
+        * track the left index until it is equal to the right.
 
 * when always choosing pivot to be the same element, and it is the largest element, then left will never shrink. So you get infinite recursion.
+
+# Benchmarking
+To Run: `cargo run --release`
+* Implement `PartialEq` manually for the `SortEvaluator<T>`s because we want to consider only the T and not the cmps.
+    * cmps is a counter so that every time we compare an element we increment the counter.
+    * we are testing Ord so we only increment cmps with the Ord trait.  cmp forwards to partial_cmp.
+* Instead of using:
+    ```
+    use std::sync::{
+        Arc, 
+        atomic::{AtomicUsize, Ordering::Relaxed}
+    };
+    ```
+    We can use 
+    ```
+    use std::cell::Cell;
+    use std::rc::Rc;
+    ```
+    Because we don't need it to be threadsafe.
+* Can't use a closure because Sorter is not object safe, so change
+    ```
+    // closure: for each test, reset the counter and sort.
+    let bench = |sorter: &dyn Sorter| {
+        let mut values = values.clone();
+        counter.set(0);
+        sorter.sort(&mut values);
+        counter.get()
+    };
+    ```
+    Instead use:
+    ```
+    fn bench<T: Ord + Clone, S: Sorter>(sorter: S, values: &[T], counter: &Cell<usize>) -> usize {
+        let mut values: Vec<_>= values.into_iter().cloned().collect();
+        counter.set(0);
+        sorter.sort(&mut values);
+        counter.get()
+    }
+    ```
+    * The sorter trait is not object safe is because we have a method that is generic in it.
+    * We cannot box the sorter because the trait is not object safe because it has a generic method on it.

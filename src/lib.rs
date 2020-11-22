@@ -3,6 +3,11 @@ mod insertionsort;
 mod selectionsort;
 mod quicksort;
 
+pub use bubblesort::BubbleSort;
+pub use insertionsort::InsertionSort;
+pub use quicksort::QuickSort;
+pub use selectionsort::SelectionSort;
+
 pub trait Sorter {
     fn sort<T>(&self, slice: &mut [T]) where T: Ord;
 }
